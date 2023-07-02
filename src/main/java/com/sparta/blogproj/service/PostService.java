@@ -3,6 +3,7 @@ package com.sparta.blogproj.service;
 import com.sparta.blogproj.dto.PasswordDto;
 import com.sparta.blogproj.dto.PostRequestDto;
 import com.sparta.blogproj.dto.PostResponseDto;
+import com.sparta.blogproj.dto.SuccessDto;
 import com.sparta.blogproj.entity.Post;
 import com.sparta.blogproj.repository.PostRepository;
 import org.springframework.stereotype.Service;
@@ -62,12 +63,12 @@ public class PostService {
 
     // 게시글 삭제
     @Transactional
-    public String deletePost(Long id, PasswordDto password) {
+    public SuccessDto deletePost(Long id, PasswordDto password) {
         Post post = findPost(id);
 
         if (post.getPassword().equals(password.getPassword())) {
             postRepository.delete(post);
-            return "게시글이 삭제되었습니다.";
+            return new SuccessDto("삭제가 완료되었습니다.");
         } else {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
