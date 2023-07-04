@@ -27,7 +27,7 @@ public class PostController {
     public static final String AUTHORIZATION_HEADER = "Authorization";
 
     // 회원가입 API
-    @PostMapping("/post/auth/signup")
+    @PostMapping("/auth/signup")
     public ResponseEntity<StatusMessageDto> createUser(@RequestBody @Valid UserInformationDto requestDto){
         return postService.createUser(requestDto);
     }
@@ -58,16 +58,16 @@ public class PostController {
     }
 
     // 선택한 게시글 수정 API
-    @PutMapping("/post/{id}")
-    public PostResponseDto updatePost(@PathVariable Long id, @RequestBody PostRequestDto requestDto) {
-        return postService.updatePost(id, requestDto);
-    }
-
-    // 선택한 게시글 삭제 API
-    @DeleteMapping("/post/{id}")
-    public SuccessDto deletePost(@PathVariable Long id, @RequestBody PasswordDto passwordDto) {
-        return postService.deletePost(id, passwordDto);
-    }
+//    @PutMapping("/post/{id}")
+//    public PostResponseDto updatePost(@PathVariable Long id, @RequestBody PostRequestDto requestDto) {
+//        return postService.updatePost(id, requestDto);
+//    }
+//
+//    // 선택한 게시글 삭제 API
+//    @DeleteMapping("/post/{id}")
+//    public SuccessDto deletePost(@PathVariable Long id, @RequestBody PasswordDto passwordDto) {
+//        return postService.deletePost(id, passwordDto);
+//    }
 
     public static void addCookie(String cookieValue, HttpServletResponse res) {
         try {

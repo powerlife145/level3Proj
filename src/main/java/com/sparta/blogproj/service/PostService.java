@@ -6,6 +6,7 @@ import com.sparta.blogproj.entity.User;
 import com.sparta.blogproj.jwt.JwtUtil;
 import com.sparta.blogproj.repository.PostRepository;
 import com.sparta.blogproj.repository.UserRepository;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -63,7 +64,12 @@ public class PostService {
         String token = jwtUtil.getJwtFromHeader(req);
 
         if (jwtUtil.validateToken(token)) {
-            Post post = new Post(requestDto);
+            Claims claims = jwtUtil.getUserInfoFromToken(token);
+            String username = claims.get("username", String.class);
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
+
+            Post post = new Post(requestDto,user);
             Post savePost = postRepository.save(post);
             PostResponseDto postResponseDto = new PostResponseDto(savePost);
             return postResponseDto;
@@ -88,31 +94,31 @@ public class PostService {
     }
 
     // 게시글 수정
-    @Transactional
-    public PostResponseDto updatePost(Long id, PostRequestDto requestDto) {
-        Post post = findPost(id);
-        if (requestDto.getPassword().equals(post.getPassword())) {
-            post.update(requestDto);
-            return new PostResponseDto(post);
-        } else {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
-
-    }
-
-    // 게시글 삭제
-    @Transactional
-    public SuccessDto deletePost(Long id, PasswordDto password) {
-        Post post = findPost(id);
-
-        if (post.getPassword().equals(password.getPassword())) {
-            postRepository.delete(post);
-            return new SuccessDto("삭제가 완료되었습니다.");
-        } else {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
-
-    }
+//    @Transactional
+//    public PostResponseDto updatePost(Long id, PostRequestDto requestDto) {
+//        Post post = findPost(id);
+//        if (requestDto.getPassword().equals(post.getPassword())) {
+//            post.update(requestDto);
+//            return new PostResponseDto(post);
+//        } else {
+//            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+//        }
+//
+//    }
+//
+//    // 게시글 삭제
+//    @Transactional
+//    public SuccessDto deletePost(Long id, PasswordDto password) {
+//        Post post = findPost(id);
+//
+//        if (post.getPassword().equals(password.getPassword())) {
+//            postRepository.delete(post);
+//            return new SuccessDto("삭제가 완료되었습니다.");
+//        } else {
+//            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+//        }
+//
+//    }
 
     // ID와 일치한 게시글 찾기
     private Post findPost(Long id) {
