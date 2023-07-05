@@ -1,10 +1,11 @@
 package com.sparta.blogproj.controller;
 
-import com.sparta.blogproj.dto.*;
+import com.sparta.blogproj.dto.PostListResponseDto;
+import com.sparta.blogproj.dto.PostRequestDto;
+import com.sparta.blogproj.dto.PostResponseDto;
+import com.sparta.blogproj.dto.StatusMessageDto;
 import com.sparta.blogproj.service.PostService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,18 +17,6 @@ public class PostController {
 
     public PostController(PostService postService) {
         this.postService = postService;
-    }
-
-    // 회원가입 API
-    @PostMapping("/auth/signup")
-    public ResponseEntity<StatusMessageDto> createUser(@RequestBody @Valid UserInformationDto requestDto) {
-        return postService.createUser(requestDto);
-    }
-
-    // 로그인 API
-    @PostMapping("/auth/login")
-    public ResponseEntity<StatusMessageDto> login(@RequestBody UserInformationDto requestDto, HttpServletResponse res) {
-        return postService.login(requestDto, res);
     }
 
     // 전체 게시글 목록 조회 API
