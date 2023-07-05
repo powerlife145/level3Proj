@@ -16,8 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -101,25 +99,22 @@ public class PostService {
 
     }
 
-//    // 게시글 삭제
-//    @Transactional
-//    public SuccessDto deletePost(Long id, PasswordDto password) {
-//        Post post = findPost(id);
-//
-//        if (post.getPassword().equals(password.getPassword())) {
-//            postRepository.delete(post);
-//            return new SuccessDto("삭제가 완료되었습니다.");
-//        } else {
-//            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-//        }
-//
-//    }
+    // 게시글 삭제
+    @Transactional
+    public ResponseEntity<StatusMessageDto> deletePost(Long id, HttpServletRequest req) {
+        User user = findUser(req);
+        Post userPost = postRepository.findById(id).orElseThrow(()->
+                new NoSuchElementException("게시글이 존재하지 않습니다."));
+        if(user.getId().equals(userPost.getUser().getId())){
+            postRepository.delete(userPost);
+            StatusMessageDto statusMessageDto = new StatusMessageDto("게시글 삭제 성공", HttpStatus.OK.value());
+            return new ResponseEntity<>(statusMessageDto, HttpStatus.OK);
+        } else {
+            throw new IllegalArgumentException("회원님의 게시글이 아닙니다.");
+        }
 
-    // ID와 일치한 게시글 찾기
-    private Post findPost(Long id) {
-        return postRepository.findById(id).orElseThrow(() ->
-                new IllegalArgumentException("일치하는 게시글이 없습니다.")
-        );
+
+
     }
 
 

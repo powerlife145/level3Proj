@@ -62,10 +62,10 @@ public class PostController {
         return postService.updatePost(id,requestDto, req);
     }
 
-//    // 선택한 게시글 삭제 API
-//    @DeleteMapping("/post/{id}")
-//    public SuccessDto deletePost(@PathVariable Long id, @RequestBody PasswordDto passwordDto) {
-//        return postService.deletePost(id, passwordDto);
-//    }
+    // 선택한 게시글 삭제 API
+    @DeleteMapping("/post/{id}")
+    public ResponseEntity<StatusMessageDto> deletePost(@PathVariable Long id,  HttpServletRequest req) {
+        return postService.deletePost(id, req);
+    }
 
 }
