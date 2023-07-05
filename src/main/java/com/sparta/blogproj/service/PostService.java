@@ -53,7 +53,7 @@ public class PostService {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
         String token = jwtUtil.createToken(requestDto.getUsername());
-        res.setHeader(JwtUtil.AUTHORIZATION_HEADER,token);
+        res.setHeader(JwtUtil.AUTHORIZATION_HEADER, token);
         StatusMessageDto statusMessageDto = new StatusMessageDto("로그인 성공", HttpStatus.OK.value());
         return new ResponseEntity<>(statusMessageDto, HttpStatus.OK);
     }
@@ -62,7 +62,7 @@ public class PostService {
     public PostResponseDto createPost(PostRequestDto requestDto, HttpServletRequest req) {
         User user = findUser(req);
 
-        Post post = new Post(requestDto,user);
+        Post post = new Post(requestDto, user);
         Post savePost = postRepository.save(post);
         PostResponseDto postResponseDto = new PostResponseDto(savePost);
         return postResponseDto;
@@ -84,11 +84,11 @@ public class PostService {
         return new PostResponseDto(post);
     }
 
-     // 게시글 수정
+    // 게시글 수정
     @Transactional
-    public PostResponseDto updatePost(Long id,PostRequestDto requestDto, HttpServletRequest req) {
+    public PostResponseDto updatePost(Long id, PostRequestDto requestDto, HttpServletRequest req) {
         User user = findUser(req);
-        Post userPost = postRepository.findById(id).orElseThrow(()->
+        Post userPost = postRepository.findById(id).orElseThrow(() ->
                 new NoSuchElementException("게시글이 존재하지 않습니다."));
         if (user.getId().equals(userPost.getUser().getId())) {
             userPost.update(requestDto, user);
@@ -103,16 +103,15 @@ public class PostService {
     @Transactional
     public ResponseEntity<StatusMessageDto> deletePost(Long id, HttpServletRequest req) {
         User user = findUser(req);
-        Post userPost = postRepository.findById(id).orElseThrow(()->
+        Post userPost = postRepository.findById(id).orElseThrow(() ->
                 new NoSuchElementException("게시글이 존재하지 않습니다."));
-        if(user.getId().equals(userPost.getUser().getId())){
+        if (user.getId().equals(userPost.getUser().getId())) {
             postRepository.delete(userPost);
             StatusMessageDto statusMessageDto = new StatusMessageDto("게시글 삭제 성공", HttpStatus.OK.value());
             return new ResponseEntity<>(statusMessageDto, HttpStatus.OK);
         } else {
             throw new IllegalArgumentException("회원님의 게시글이 아닙니다.");
         }
-
 
 
     }
