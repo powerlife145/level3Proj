@@ -1,3 +1,3 @@
 # Spring-Lv2
 
-![](C:\Users\user\Desktop\ERD.png)
+![poster](C:\Users\user\Desktop\ERD.png)
