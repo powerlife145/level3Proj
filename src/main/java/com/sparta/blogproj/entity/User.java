@@ -26,9 +26,9 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Post> postList = new ArrayList<>();
 
-    public User(UserInformationDto requestDto) {
-        this.username = requestDto.getUsername();
-        this.password = requestDto.getPassword();
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
     }
 
 }
