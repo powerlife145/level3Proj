@@ -1,11 +1,9 @@
 package com.sparta.blogproj.service;
 
-import com.sparta.blogproj.dto.PostListResponseDto;
-import com.sparta.blogproj.dto.PostRequestDto;
-import com.sparta.blogproj.dto.PostResponseDto;
-import com.sparta.blogproj.dto.StatusMessageDto;
+import com.sparta.blogproj.dto.*;
 import com.sparta.blogproj.entity.Post;
 import com.sparta.blogproj.entity.User;
+import com.sparta.blogproj.entity.UserRoleEnum;
 import com.sparta.blogproj.jwt.JwtUtil;
 import com.sparta.blogproj.repository.PostRepository;
 import com.sparta.blogproj.repository.UserRepository;
@@ -15,9 +13,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+
+import static com.sparta.blogproj.entity.UserRoleEnum.ADMIN;
 
 
 @Service
@@ -36,7 +38,6 @@ public class PostService {
     // 게시글 생성
     public PostResponseDto createPost(PostRequestDto requestDto, HttpServletRequest req) {
         User user = findUser(req);
-
         Post post = new Post(requestDto, user);
         Post savePost = postRepository.save(post);
         PostResponseDto postResponseDto = new PostResponseDto(savePost);
@@ -63,32 +64,53 @@ public class PostService {
     @Transactional
     public PostResponseDto updatePost(Long id, PostRequestDto requestDto, HttpServletRequest req) {
         User user = findUser(req);
+
+        if (!user.getRole().equals(UserRoleEnum.ADMIN)  && !user.getUsername().equals(user)) {
+            throw new IllegalArgumentException("관리자 또는 게시글 작성자만 수정할 수 있습니다.");
+        }
+
         Post userPost = postRepository.findById(id).orElseThrow(() ->
                 new NoSuchElementException("게시글이 존재하지 않습니다."));
-        if (user.getId().equals(userPost.getUser().getId())) {
-            userPost.update(requestDto, user);
-            return new PostResponseDto(userPost);
-        } else {
-            throw new IllegalArgumentException("회원님의 게시글이 아닙니다.");
-        }
+
+//        user.getId().equals(userPost.getUser().getId())
+        if(!user.getRole().equals(UserRoleEnum.ADMIN)){
+            if (user.getId().equals(userPost.getUser().getId())) {
+                userPost.update(requestDto, user);
+                return new PostResponseDto(userPost);
+            } else {
+                throw new NotAuthorException("작성자만 삭제/수정할 수 있습니다.");
+            }
+        }else{userPost.update(requestDto, user);
+            return new PostResponseDto(userPost);}
 
     }
 
     // 게시글 삭제
-    @Transactional
     public ResponseEntity<StatusMessageDto> deletePost(Long id, HttpServletRequest req) {
         User user = findUser(req);
-        Post userPost = postRepository.findById(id).orElseThrow(() ->
-                new NoSuchElementException("게시글이 존재하지 않습니다."));
-        if (user.getId().equals(userPost.getUser().getId())) {
-            postRepository.delete(userPost);
-            StatusMessageDto statusMessageDto = new StatusMessageDto("게시글 삭제 성공", HttpStatus.OK.value());
-            return new ResponseEntity<>(statusMessageDto, HttpStatus.OK);
-        } else {
-            throw new IllegalArgumentException("회원님의 게시글이 아닙니다.");
+
+        if (!user.getRole().equals(UserRoleEnum.ADMIN)  && !user.getUsername().equals(user)) {
+            throw new IllegalArgumentException("관리자 또는 게시글 작성자만 수정할 수 있습니다.");
         }
 
+        Post userPost = postRepository.findById(id).orElseThrow(() ->
+                new NoSuchElementException("게시글이 존재하지 않습니다."));
+
+        if(!user.getRole().equals(UserRoleEnum.ADMIN)){
+            if (user.getId().equals(userPost.getUser().getId())) {
+                postRepository.delete(userPost);
+                StatusMessageDto statusMessageDto = new StatusMessageDto("게시글 삭제 성공", HttpStatus.OK.value());
+                return new ResponseEntity<>(statusMessageDto, HttpStatus.OK);
+            } else {
+                StatusMessageDto statusMessageDto = new StatusMessageDto("게시글 삭제 실패", HttpStatus.BAD_REQUEST.value());
+                return new ResponseEntity<>(statusMessageDto, HttpStatus.BAD_REQUEST);
+            }
+        }else{postRepository.delete(userPost);
+            StatusMessageDto statusMessageDto = new StatusMessageDto("게시글 삭제 성공", HttpStatus.OK.value());
+            return new ResponseEntity<>(statusMessageDto, HttpStatus.OK);
+        }
     }
+
 
     // 토큰 검사 후 User 반환
     public User findUser(HttpServletRequest req) {
@@ -96,7 +118,7 @@ public class PostService {
 
         if (jwtUtil.validateToken(token)) {
             Claims claims = jwtUtil.getUserInfoFromToken(token);
-            String username = claims.get("username", String.class);
+            String username = claims.get("sub", String.class);
             return userRepository.findByUsername(username)
                     .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
         } else {
@@ -104,4 +126,14 @@ public class PostService {
         }
     }
 
+    @ControllerAdvice
+    public class GlobalExceptionHandler {
+        @ExceptionHandler(NotAuthorException.class)
+
+        public ResponseEntity<StatusMessageDto> handleNotAuthor(NotAuthorException e) {
+
+            StatusMessageDto statusMessageDto = new StatusMessageDto(e.getMessage(), HttpStatus.BAD_REQUEST.value());
+            return new ResponseEntity<>(statusMessageDto, HttpStatus.BAD_REQUEST);
+        }
+    }
 }

@@ -22,12 +22,20 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @OneToMany(mappedBy = "user")
-    private List<Post> postList = new ArrayList<>();
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)    //enum 타입을 데이터베이스에 컬럼으로 저장(@Enumerated)
+    private UserRoleEnum role;
 
-    public User(String username, String password) {
+    @OneToMany(mappedBy = "user")
+    private List<Post> userList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Comment> commentList = new ArrayList<>();
+
+    public User(String username, String password, UserRoleEnum role) {
         this.username = username;
         this.password = password;
+        this.role=role;
     }
 
 }

@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity // JPA가 관리할 수 있는 Entity 클래스 지정
 @Getter
 @Setter
@@ -22,9 +25,11 @@ public class Post extends Timestamped {
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name="user_id")
     private User user;
 
+    @OneToMany(mappedBy = "post")
+    private List<Comment> commentList = new ArrayList<>();
 
     public Post(PostRequestDto requestDto, User user) {
         this.content = requestDto.getContent();
@@ -32,9 +37,9 @@ public class Post extends Timestamped {
         this.user = user;
     }
 
-    public void update(PostRequestDto requestDto,User user) {
+    public void update(PostRequestDto requestDto, User user) {
         this.content = requestDto.getContent();
         this.title =requestDto.getTitle();
-        this.user = user;
+        this.user=user;
     }
 }
